@@ -42,5 +42,3 @@ entry("getpid");
 entry("sbrk");
 entry("pause");
 entry("uptime");
-entry("getprocs");
-entry("trace");
