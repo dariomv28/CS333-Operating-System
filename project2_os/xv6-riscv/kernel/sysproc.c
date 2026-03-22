@@ -107,3 +107,19 @@ sys_uptime(void)
   release(&tickslock);
   return xticks;
 }
+
+uint64
+sys_mmap(void)
+{
+  return mmap();
+}
+
+uint64
+sys_munmap(void)
+{
+  uint64 va;
+  // if(argaddr(0, &va) < 0)
+  //   return -1;
+  argaddr(0, &va);
+  return munmap(va);
+}
