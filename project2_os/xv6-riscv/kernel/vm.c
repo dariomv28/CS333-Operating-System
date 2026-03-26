@@ -27,6 +27,7 @@ struct {
 
 // Define a specific region for shared memory
 #define SHMEM_REGION 0x4000000  // 64MB mark
+#define MAX_SHMEM 16
 
 // Make a direct-map page table for the kernel.
 pagetable_t

@@ -160,64 +160,80 @@ static uint64 (*syscalls[])(void) = {
   [SYS_trace]   = sys_trace,
 };
 
-// void
-// syscall(void)
-// {
-//   int num;
-//   struct proc *p = myproc();
-
-//   num = p->trapframe->a7;
-//   if(num > 0 && num < NELEM(syscalls) && syscalls[num]) {
-//     // Use num to lookup the system call function for num, call it,
-//     // and store its return value in p->trapframe->a0
-//     p->trapframe->a0 = syscalls[num]();
-//   } else {
-//     printf("%d %s: unknown sys call %d\n",
-//             p->pid, p->name, num);
-//     p->trapframe->a0 = -1;
-//   }
-// }
 
 void
 syscall(void)
 {
   int num;
   struct proc *p = myproc();
-
   num = p->trapframe->a7;
-
   if(num > 0 && num < NELEM(syscalls) && syscalls[num]) {
+    int fd, n, flags, mask;
+    uint64 buf;
+    char path[128];
+    uint64 uargv;
+    uint64 argp;
+    char argvs[3][128];
+    if(num == SYS_trace){
+      argint(0, &mask);
+    }
+    else if(p->tracemask & (1 << num)){
+      switch(num){
+        case SYS_read:
+          argint(0, &fd);
+          argaddr(1, &buf);
+          argint(2, &n);
+          break;
+        case SYS_open:
+          argstr(0, path, sizeof(path));
+          argint(1, &flags);
+          break;
+        case SYS_exec:
+          argstr(0, path, sizeof(path));
+          argaddr(1, &uargv);
+          for(int i = 0; i < 3; i++){
+            if(copyin(p->pagetable, (char*)&argp, uargv + i*sizeof(uint64), sizeof(uint64)) < 0)
+              break;
+            if(argp == 0)
+              break;
+            if(copyinstr(p->pagetable, argvs[i], argp, sizeof(argvs[i])) < 0)
+              break;
+          }
+          break;
+        case SYS_close:
+          argint(0, &fd);
+          break;
+      }
+    }
     int ret = syscalls[num]();
     p->trapframe->a0 = ret;
-
-    if(p->tracemask & (1 << num)) {
-      if (num == SYS_read) {
-        int fd;
-        int n;
-        uint64 buf;
-        argint(0, &fd);
-        argaddr(1, &buf);
-        argint(2, &n);
-        printf("%d: syscall read(%d, %p, %d) -> %d\n", p->pid, fd, (void *)buf, n, ret);
-      }
-      else if (num == SYS_write) {
-        int fd;
-        int n;
-        uint64 buf;
-        argint(0, &fd);
-        argaddr(1, &buf);
-        argint(2, &n);
-        printf("%d: syscall write(%d, %p, %d) -> %d\n", p->pid, fd, (void *)buf, n, ret);
-      }
-      else if(num == SYS_open){
-        char path[128];
-        int flags;
-        argstr(0, path, sizeof(path));
-        argint(1, &flags);
-        printf("%d: syscall open(\"%s\", %d) -> %d\n", p->pid, path, flags, ret);
-      }
-      else {
-        printf("%d: syscall %s -> %d\n", p->pid, syscall_names[num], ret);
+    if(p->tracemask & (1 << num)){
+      switch(num){
+        case SYS_trace:
+          printf("%d: trace(%d) -> %d\n", p->pid, mask, ret);
+          break;
+        case SYS_exec:
+          printf("%d: exec(\"%s\", [", p->pid, path);
+          for(int i = 0; i < 3; i++){
+            if(argvs[i][0] == 0) break;
+            printf("\"%s\"", argvs[i]);
+            if(i < 2 && argvs[i+1][0] != 0)
+              printf(", ");
+          }
+          printf("]) -> %d\n", ret);
+          break;
+        case SYS_open:
+          printf("%d: open(\"%s\", %d) -> %d\n", p->pid, path, flags, ret);
+          break;
+        case SYS_read:
+          printf("%d: read(%d, %p, %d) -> %d\n", p->pid, fd, (void*)buf, n, ret);
+          break;
+        case SYS_close:
+          printf("%d: close(%d) -> %d\n", p->pid, fd, ret);
+          break;
+        default:
+          printf("%d: %s -> %d\n", p->pid, syscall_names[num], ret);
+          break;
       }
     }
   } else {
