@@ -210,10 +210,10 @@ syscall(void)
     if(p->tracemask & (1 << num)){
       switch(num){
         case SYS_trace:
-          printf("%d: trace(%d) -> %d\n", p->pid, mask, ret);
+          printf("%d: syscall trace(%d) -> %d\n", p->pid, mask, ret);
           break;
         case SYS_exec:
-          printf("%d: exec(\"%s\", [", p->pid, path);
+          printf("%d: syscall exec(\"%s\", [", p->pid, path);
           for(int i = 0; i < 3; i++){
             if(argvs[i][0] == 0) break;
             printf("\"%s\"", argvs[i]);
@@ -223,13 +223,13 @@ syscall(void)
           printf("]) -> %d\n", ret);
           break;
         case SYS_open:
-          printf("%d: open(\"%s\", %d) -> %d\n", p->pid, path, flags, ret);
+          printf("%d: syscall open(\"%s\", %d) -> %d\n", p->pid, path, flags, ret);
           break;
         case SYS_read:
-          printf("%d: read(%d, %p, %d) -> %d\n", p->pid, fd, (void*)buf, n, ret);
+          printf("%d: syscall read(%d, %p, %d) -> %d\n", p->pid, fd, (void*)buf, n, ret);
           break;
         case SYS_close:
-          printf("%d: close(%d) -> %d\n", p->pid, fd, ret);
+          printf("%d: syscall close(%d) -> %d\n", p->pid, fd, ret);
           break;
         default:
           printf("%d: %s -> %d\n", p->pid, syscall_names[num], ret);

@@ -17,7 +17,7 @@ main(int argc, char *argv[])
     exit(1);
   }
 
-  printf("Mapped shared memory at 0x%p\n", (void*)shared_addr);
+  printf("Mapped shared memory at %p\n", (void*)shared_addr);
 
   // Write to shared memory
   int *shared_data = (int*)shared_addr;

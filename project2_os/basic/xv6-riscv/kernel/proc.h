@@ -1,6 +1,3 @@
-#ifndef PROC_H
-#define PROC_H
-
 // Saved registers for kernel context switches.
 struct context {
   uint64 ra;
@@ -107,8 +104,4 @@ struct proc {
   struct file *ofile[NOFILE];  // Open files
   struct inode *cwd;           // Current directory
   char name[16];               // Process name (debugging)
-  int tracemask;
 };
-
-#endif // PROC_H
-

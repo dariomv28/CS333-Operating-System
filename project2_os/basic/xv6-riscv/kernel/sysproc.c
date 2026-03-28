@@ -109,19 +109,17 @@ sys_uptime(void)
 }
 
 uint64
-sys_getprocs(void)
+sys_mmap(void)
 {
-  uint64 addr;
-  int max;
-  argaddr(0, &addr);
-  argint(1, &max);
-  return getprocs(addr, max);
+  return mmap();
 }
 
-uint64 sys_trace(void)
+uint64
+sys_munmap(void)
 {
-  int mask;
-  argint(0, &mask);
-  myproc()->tracemask = mask;
-  return 0;
+  uint64 va;
+  // if(argaddr(0, &va) < 0)
+  //   return -1;
+  argaddr(0, &va);
+  return munmap(va);
 }
