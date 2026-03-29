@@ -1,4 +1,4 @@
-# CS333 Operating System - xv6 Projects
+# CS333 Operating System - xv6 lab
 
 This repository contains my implementations for the CS333 Operating Systems course, built on top of the MIT xv6 RISC-V operating system. The project is divided into utility enhancements, new system calls, and a custom memory mapping mechanism.
 
